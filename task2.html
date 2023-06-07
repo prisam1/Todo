@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>To-Do List</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div id="container">
+    <h1>To-Do List</h1>
+    <input type="text" id="taskInput" placeholder="Enter a new task...">
+    <ul id="taskList"></ul>
+  </div>
+
+  <script>
+    const taskInput = document.getElementById("taskInput")
+    const taskList = document.getElementById("taskList")
+
+    taskInput.addEventListener("keyup", function(event) {
+      if (event.keyCode === 13) {
+        const task = taskInput.value.trim();
+        if (task !== "") {
+          const li = document.createElement("li");
+          li.innerHTML = `
+            <span>${task}</span>
+            <button class="delete-btn">Delete</button>
+          `;
+          taskList.appendChild(li);
+          taskInput.value = "";
+        }
+      }
+    });
+
+    taskList.addEventListener("click", function(event) {
+      const target = event.target;
+      if (target.tagName === "SPAN") {
+        const li = target.parentNode;
+        li.classList.toggle("completed");
+      }
+    });
+
+    taskList.addEventListener("click", function(event) {
+      const target = event.target;
+      if (target.classList.contains("delete-btn")) {
+        const li = target.parentNode;
+        taskList.removeChild(li);
+      }
+    });
+  </script>
+</body>
+</html>
