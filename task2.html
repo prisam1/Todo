@@ -3,48 +3,131 @@
 <head>
   <title>To-Do List</title>
   <link rel="stylesheet" href="style.css" />
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      loadTasks();
+    });
+    
+    function toggleTaskCompletion(taskId) {
+      var taskElement = document.getElementById(taskId);
+      taskElement.classList.toggle('completed');
+      
+      saveTasks();
+    }
+    
+    function setTaskDeadline(taskId) {
+      var taskElement = document.getElementById(taskId);
+      var deadline = prompt('Set a deadline for this task (DD-MM-YYYY)');
+      
+      if (deadline !== null) {
+        taskElement.dataset.deadline = deadline;
+        saveTasks();
+      }
+    }
+    
+    function deleteTask(taskId) {
+      var taskElement = document.getElementById(taskId);
+      taskElement.remove();
+      saveTasks();
+    }
+    
+    function addTask() {
+      var taskInput = document.getElementById('taskInput');
+      var taskDescription = taskInput.value.trim();
+      
+      if (taskDescription !== '') {
+        var taskList = document.getElementById('taskList');
+        
+        var newTask = document.createElement('li');
+        var taskId = 'task' + (taskList.getElementsByTagName('li').length + 1);
+        newTask.setAttribute('id', taskId);
+        newTask.setAttribute('class', 'task-item');
+        newTask.innerHTML = `
+          <input type="checkbox" onclick="toggleTaskCompletion('${taskId}')">
+          <label>${taskDescription}</label>
+          <span class="deadline" onclick="setTaskDeadline('${taskId}')">(Set Deadline)</span>
+          <span class="delete-task" onclick="deleteTask('${taskId}')">&#x2715;</span>
+        `;
+        
+        taskList.appendChild(newTask);
+        taskInput.value = '';
+        
+        saveTasks();
+      }
+    }
+    
+    function saveTasks() {
+      var taskList = document.getElementById('taskList');
+      var tasks = Array.from(taskList.getElementsByClassName('task-item')).map(function(task) {
+        return {
+          id: task.id,
+          description: task.getElementsByTagName('label')[0].innerText,
+          completed: task.classList.contains('completed'),
+          deadline: task.dataset.deadline || ''
+        };
+      });
+      
+      localStorage.setItem('tasks', JSON.stringify(tasks));
+    }
+    
+    function loadTasks() {
+      var savedTasks = localStorage.getItem('tasks');
+      
+      if (savedTasks) {
+        var tasks = JSON.parse(savedTasks);
+        var taskList = document.getElementById('taskList');
+        
+        tasks.forEach(function(task) {
+          var newTask = document.createElement('li');
+          newTask.setAttribute('id', task.id);
+          newTask.setAttribute('class', task.completed ? 'task-item completed' : 'task-item');
+          newTask.innerHTML = `
+            <input type="checkbox" onclick="toggleTaskCompletion('${task.id}')">
+            <label>${task.description}</label>
+            <span class="deadline" onclick="setTaskDeadline('${task.id}')">${task.deadline !== '' ? task.deadline : '(Set Deadline)'}</span>
+            <span class="delete-task" onclick="deleteTask('${task.id}')">&#x2715;</span>
+          `;
+          
+          newTask.dataset.deadline = task.deadline || '';
+          
+          taskList.appendChild(newTask);
+        });
+      }
+    }
+    function filterTasks(filter) {
+      var taskList = document.getElementById('taskList');
+      var taskItems = Array.from(taskList.getElementsByClassName('task-item'));
+      
+      taskItems.forEach(function(task) {
+        var completed = task.classList.contains('completed');
+        
+        if (filter === 'all') {
+          task.style.display = 'flex';
+        } else if (filter === 'active' && !completed) {
+          task.style.display = 'flex';
+        } else if (filter === 'completed' && completed) {
+          task.style.display = 'flex';
+        } else {
+          task.style.display = 'none';
+        }
+      });
+    }
+  </script>
 </head>
 <body>
-  <div id="container">
-    <h1>To-Do List</h1>
-    <input type="text" id="taskInput" placeholder="Enter a new task...">
-    <ul id="taskList"></ul>
+  <h1>To-Do List</h1>
+  <div class="container">
+    <ul id="taskList" class="task-list"></ul>
+  
+    <div class="add-task-form">
+      <input type="text" id="taskInput" placeholder="Add a new task">
+      <button onclick="addTask()">Add Task</button>
+    </div>
+    <div class="filter-buttons">
+      <button class="filter-button active" onclick="filterTasks('all')">All</button>
+      <button class="filter-button" onclick="filterTasks('active')">Active</button>
+      <button class="filter-button" onclick="filterTasks('completed')">Completed</button>
+    </div>
   </div>
-
-  <script>
-    const taskInput = document.getElementById("taskInput")
-    const taskList = document.getElementById("taskList")
-
-    taskInput.addEventListener("keyup", function(event) {
-      if (event.keyCode === 13) {
-        const task = taskInput.value.trim();
-        if (task !== "") {
-          const li = document.createElement("li");
-          li.innerHTML = `
-            <span>${task}</span>
-            <button class="delete-btn">Delete</button>
-          `;
-          taskList.appendChild(li);
-          taskInput.value = "";
-        }
-      }
-    });
-
-    taskList.addEventListener("click", function(event) {
-      const target = event.target;
-      if (target.tagName === "SPAN") {
-        const li = target.parentNode;
-        li.classList.toggle("completed");
-      }
-    });
-
-    taskList.addEventListener("click", function(event) {
-      const target = event.target;
-      if (target.classList.contains("delete-btn")) {
-        const li = target.parentNode;
-        taskList.removeChild(li);
-      }
-    });
-  </script>
 </body>
 </html>
