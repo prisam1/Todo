@@ -27,6 +27,7 @@ h1 {
 .task-item .deadline {
   margin-left: auto;
   color: #999;
+  cursor: pointer;
 }
 .add-task-form {
   display: flex;
